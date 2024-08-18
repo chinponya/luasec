@@ -368,6 +368,20 @@ static int load_locations(lua_State *L)
   return 1;
 }
 
+static int load_store(lua_State *L)
+{
+  SSL_CTX *ctx = lsec_checkcontext(L, 1);
+  const char *castore = luaL_optstring(L, 2, NULL);
+  if (SSL_CTX_load_verify_store(ctx, castore) != 1) {
+    lua_pushboolean(L, 0);
+    lua_pushfstring(L, "error loading CA store (%s)",
+      ERR_reason_error_string(ERR_get_error()));
+    return 2;
+  }
+  lua_pushboolean(L, 1);
+  return 1;
+}
+
 /**
  * Load the certificate file.
  */
@@ -884,6 +898,7 @@ static int set_dane(lua_State *L)
 static luaL_Reg funcs[] = {
   {"create",          create},
   {"locations",       load_locations},
+  {"loadstore",       load_store},
   {"loadcert",        load_cert},
   {"loadkey",         load_key},
   {"checkkey",        check_key},
